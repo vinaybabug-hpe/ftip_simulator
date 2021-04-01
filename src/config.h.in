@@ -1,0 +1,3 @@
+// the configured options and settings for simulator
+#define FTiP_Simulator_VERSION_MAJOR @FTiP_Simulator_VERSION_MAJOR@
+#define FTiP_Simulator_VERSION_MINOR @FTiP_Simulator_VERSION_MINOR@
