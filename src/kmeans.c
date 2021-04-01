@@ -25,7 +25,7 @@
 #include <float.h>
 #include <assert.h>
 
-/* return an array of cluster centers of size [numClusters][numCoords]       */
+/* return an array of cluster centers of size [numClusters][numCoords] */
 int 
 seq_kmeans (		  
 	float **objects,  /* in: [numObjs][numCoords] */
@@ -86,19 +86,24 @@ seq_kmeans (
 				fprintf(trace_file, "%3.2f, ", objects[oIndex][i]);
 			}				
 			fprintf(trace_file, "\n");
-			for (int cluster_index = 0; cluster_index < numClusters; cluster_index++) {
+			for (int cluster_index = 0; cluster_index < numClusters; 
+				cluster_index++) {
 				result = 0.0;
 				dist = 0.0;
 
 				fprintf(trace_file, "#Cluster %i \n", cluster_index);
 				for (int feature = 0; feature < numCoords; feature++) {
-					float term = objects[oIndex][feature] - clusters[cluster_index][feature];
-					fprintf(trace_file, "%3.2f = %3.2f - %3.2f\n", term, objects[oIndex][feature], clusters[cluster_index][feature]);
+					float term = objects[oIndex][feature] - 
+									clusters[cluster_index][feature];
+					fprintf(trace_file, "%3.2f = %3.2f - %3.2f\n", term, 
+					objects[oIndex][feature], clusters[cluster_index][feature]);
 					float squared_term = term * term;
-					fprintf(trace_file, "%3.2f = %3.2f * %3.2f\n", squared_term, term, term);
+					fprintf(trace_file, "%3.2f = %3.2f * %3.2f\n", squared_term
+					, term, term);
 					float old_result = result;
 					result = old_result + squared_term;
-					fprintf(trace_file, "%3.2f = %3.2f + %3.2f\n", result, old_result, squared_term);
+					fprintf(trace_file, "%3.2f = %3.2f + %3.2f\n", result, 
+					old_result, squared_term);
 				}
 				fprintf(trace_file, "\n");
 				dist = result;
@@ -126,7 +131,8 @@ seq_kmeans (
 		for (int cluster_ind = 0; cluster_ind < numClusters; cluster_ind++) {
 			for (int feature = 0; feature < numCoords; feature++) {
 				if (newClusterSize[cluster_ind] > 0) {
-					clusters[cluster_ind][feature] = newClusters[cluster_ind][feature] / newClusterSize[cluster_ind];
+					clusters[cluster_ind][feature] = newClusters[cluster_ind]
+					[feature] / newClusterSize[cluster_ind];
 				}
 				newClusters[cluster_ind][feature] = 0.0; /* set back to 0 */
 			}
@@ -163,8 +169,6 @@ main (
 	void)
 
 {
-
-
 	int numObjects = 8;
 	int numCoords = 3;
 	int numClusters = 3;
@@ -177,12 +181,12 @@ main (
 	float **clusters;
 	FILE *trace_file = fopen("boot_strap3_trace.txt", "w+");
 
-	float data[] = {18, 23, 5, 22, 8, 9, 10, 3, 14, 16, 1, 6, 2, 14, 2, 23, 11, 23, 22, 9, 25, 23, 2, 14};
+	float data[] = {18, 23, 5, 22, 8, 9, 10, 3, 14, 16, 1, 6, 2, 14, 2, 23, 11,
+	 23, 22, 9, 25, 23, 2, 14};
 	for (int i = 0; i < numObjects; i++) {
 		objects[i] = (float *)calloc(numCoords, sizeof(float));
 		printf("Object # %i: ", i);
 		for (int j = 0; j < numCoords; j++) {
-
 			objects[i][j] = data[2 * i + j];
 			printf(" %6.3f, ", objects[i][j]);
 		}
