@@ -178,12 +178,10 @@ main (
 	FILE *trace_file = fopen("boot_strap3_trace.txt", "w+");
 
 	float data[] = {18, 23, 5, 22, 8, 9, 10, 3, 14, 16, 1, 6, 2, 14, 2, 23, 11, 23, 22, 9, 25, 23, 2, 14};
-	for (int i = 0; i < numObjects; i++)
-	{
+	for (int i = 0; i < numObjects; i++) {
 		objects[i] = (float *)calloc(numCoords, sizeof(float));
 		printf("Object # %i: ", i);
-		for (int j = 0; j < numCoords; j++)
-		{
+		for (int j = 0; j < numCoords; j++) {
 
 			objects[i][j] = data[2 * i + j];
 			printf(" %6.3f, ", objects[i][j]);
