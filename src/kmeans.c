@@ -203,8 +203,7 @@ seq_kmeans (
 }
 
 int 
-main (
-	void)
+main (void)
 
 {
 	int numObjects = 8;
