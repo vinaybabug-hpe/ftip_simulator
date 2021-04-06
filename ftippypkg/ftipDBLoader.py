@@ -20,8 +20,8 @@
 from neomodel import config, UniqueProperty, DoesNotExist, db
 from parse import compile
 from ftippypkg.Node import Node
-from collections import defaultdict
- 
+
+
 # Configure neo4j connection string
 config.DATABASE_URL = 'bolt://neo4j:test@localhost:7687'
 
@@ -34,7 +34,6 @@ def loadGraph(vertex_file, edge_file) :
     pe = compile("{}->{}")
     vertices = open(vertex_file, 'r')
     vertexLs = vertices.readlines()
-    dict_vertices = defaultdict(Node)
 
     for vertexL in vertexLs:
         temp1 = p1.parse(vertexL)
@@ -58,7 +57,6 @@ def loadGraph(vertex_file, edge_file) :
                 operand_1=temp3[1], operand_2=temp3[2], operator="+").save()
                 id = temp3[3].strip("\n")
 
-            dict_vertices[id] = vertex
             print("Vertex {} loaded...".format(id))
         
         except UniqueProperty:
