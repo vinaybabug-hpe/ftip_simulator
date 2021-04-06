@@ -54,7 +54,10 @@ seq_kmeans (
 	unsigned long long int **cluster_vertex_id;
 	
 	// Increment vertex_id to 1, 0 is reserved for starting node in DAG
+	fprintf(_vertices_file, "%3.2f ,= %3.2f ,- %3.2f\t%d\n", 0.0,
+					0.0, 0.0, 0);
 	vertex_id++;
+
 	/* initialize membership[] */
 	for (i = 0; i < numObjs; i++) {
 		membership[i] = -1;
@@ -70,9 +73,11 @@ seq_kmeans (
 	newClusters[0] = (float *)calloc(numClusters * numCoords, sizeof(float));
 	assert(newClusters[0] != NULL);
 	// allocate vertex id's for cluster centers
-	cluster_vertex_id = (unsigned long long int **)malloc(numClusters * sizeof(unsigned long long int *));
+	cluster_vertex_id = (unsigned long long int **)
+		malloc(numClusters * sizeof(unsigned long long int *));
 	assert(cluster_vertex_id != NULL);
-	cluster_vertex_id[0] = (unsigned long long int *)calloc(numClusters * numCoords, sizeof(unsigned long long int));
+	cluster_vertex_id[0] = (unsigned long long int *)
+		calloc(numClusters * numCoords, sizeof(unsigned long long int));
 	assert(cluster_vertex_id[0] != NULL);
 	for (i = 1; i < numClusters; i++) {
 		newClusters[i] = newClusters[i - 1] + numCoords;
@@ -90,6 +95,8 @@ seq_kmeans (
 	for (i = 0; i < numClusters; i++) {
 		for (j = 0; j < numCoords; j++) {
 			cluster_vertex_id[i][j] = vertex_id++;
+			fprintf(_vertices_file, "%3.2f ,= %3.2f ,- %3.2f\t%llu\n", clusters[i][j],
+					clusters[i][j], 0.0, cluster_vertex_id[i][j]);
 			fprintf(_edges_file, "%d->%llu\n",0, cluster_vertex_id[i][j]);
 		}
 	}
@@ -111,7 +118,8 @@ seq_kmeans (
 				cluster_index++) {
 				result = 0.0;
 				dist = 0.0;
-				long long unsigned int vertex_1 = 0, vertex_2 = 0, vertex_3 = 0, vertex_4 = 0;
+				long long unsigned int vertex_1 = 0, vertex_2 = 0, vertex_3 = 0;
+				long long unsigned int vertex_4 = 0;
 				fprintf(trace_file, "#Cluster %i \n", cluster_index);
 				for (int feature = 0; feature < numCoords; feature++) {
 					float term = objects[oIndex][feature] - 
@@ -119,21 +127,23 @@ seq_kmeans (
 					
 					fprintf(trace_file, "%3.2f = %3.2f - %3.2f\n", term, 
 					objects[oIndex][feature], clusters[cluster_index][feature]);
-					fprintf(_vertices_file, "%3.2f=%3.2f-%3.2f\t%llu\n", term, 
-					objects[oIndex][feature], clusters[cluster_index][feature], vertex_1 = vertex_id++);
+					fprintf(_vertices_file, "%3.2f ,= %3.2f ,- %3.2f\t%llu\n", term, 
+					objects[oIndex][feature], clusters[cluster_index][feature], 
+						vertex_1 = vertex_id++);
 					float squared_term = term * term;
 					fprintf(trace_file, "%3.2f = %3.2f * %3.2f\n", squared_term
 					, term, term);
-					fprintf(_vertices_file, "%3.2f=%3.2f*%3.2f\t%llu\n", squared_term
+					fprintf(_vertices_file, "%3.2f ,= %3.2f ,* %3.2f\t%llu\n", squared_term
 					, term, term, vertex_2 = vertex_id++);
 					//Create edges
-					fprintf(_edges_file, "%llu->%llu\n",cluster_vertex_id[cluster_index][feature], vertex_1);
+					fprintf(_edges_file, "%llu->%llu\n",
+						cluster_vertex_id[cluster_index][feature], vertex_1);
 					fprintf(_edges_file, "%llu->%llu\n",vertex_1, vertex_2);
 					float old_result = result;
 					result = old_result + squared_term;
 					fprintf(trace_file, "%3.2f = %3.2f + %3.2f\n", result, 
 					old_result, squared_term);
-					fprintf(_vertices_file, "%3.2f=%3.2f+%3.2f\t%llu\n", result, 
+					fprintf(_vertices_file, "%3.2f ,= %3.2f ,+ %3.2f\t%llu\n", result, 
 					old_result, squared_term, vertex_3 = vertex_id++);
 					fprintf(_edges_file, "%llu->%llu\n",vertex_2, vertex_3);
 					if (vertex_4 != 0) {
@@ -173,7 +183,10 @@ seq_kmeans (
 				}
 				newClusters[cluster_ind][feature] = 0.0; /* set back to 0 */
 				cluster_vertex_id[cluster_ind][feature] = vertex_id++;
-			}
+				fprintf(_vertices_file, "%3.2f ,= %3.2f ,- %3.2f\t%llu\n", 
+				clusters[cluster_ind][feature], clusters[cluster_ind][feature],
+				 0.0, cluster_vertex_id[cluster_ind][feature]);
+			}			
 			clusterSize[cluster_ind] = newClusterSize[cluster_ind];
 			newClusterSize[cluster_ind] = 0;
 		}
