@@ -50,3 +50,10 @@ docker run \
 	--env NEO4J_dbms_connector_http_advertised__address="localhost:7474" \
 	--env NEO4J_dbms_connector_bolt_advertised__address="localhost:7687" \
     neo4j:latest
+
+    Simulator uses python to interact with neo4j database. And requires driver and Neomodel.
+
+    pip install neo4j
+    pip install neomodel
+
+    Please following link (https://neo4j.com/developer/python/) for more details.
