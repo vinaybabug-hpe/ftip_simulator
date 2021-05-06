@@ -57,3 +57,12 @@ docker run \
     pip install neomodel
 
     Please following link (https://neo4j.com/developer/python/) for more details.
+
+Simulator exposes gen_graph.sh script to build custom kmeans algorithm and run it. This script uses desc.txt and data.csv to specify run parameters. These parameters are used while generating cu graph for ensemble.
+To run the script type ./gen_graph.sh at the terminal.
+
+Simulator can be used to load the graph,
+    python3 ftip_sim.py --e edges.txt --v vertices.txt –l
+and find minimum bandwidth of the loaded graph
+    python3 ftip_sim.py --m
+Please modify BandwidthTesting.py, to change behavior of algorithm used to find minimum bandwidth.
