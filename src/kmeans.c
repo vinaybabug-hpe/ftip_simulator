@@ -22,15 +22,56 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <float.h>
 #include <assert.h>
+#include <ctype.h>
 
 #define VERTICES_FILE "vertices.txt" 
 #define EDGES_FILE "edges.txt" 
 
+static unsigned long long int vertex_id = 0;
+
+// Note: This function returns a pointer to a substring of the original string.
+// If the given string was allocated dynamically, the caller must not overwrite
+// that pointer with the returned value, since the original pointer must be
+// deallocated using the same allocator with which it was allocated.  The return
+// value must NOT be deallocated using free() etc.
+char *trimwhitespace(char *str)
+{
+  char *end;
+
+  // Trim leading space
+  while(isspace((unsigned char)*str)) str++;
+  if(*str == 0) { // All spaces?
+    return str;
+  }
+
+  // Trim trailing space
+  end = str + strlen(str) - 1;
+  while(end > str && isspace((unsigned char)*end)) end--;
+  // Write new null terminator character
+  end[1] = '\0';
+  return str;
+}
+
+const char* getfield(char* line, int num)
+{
+	const char* tok;
+	for (tok = strtok(line, ",");
+			tok && *tok;
+			tok = strtok(NULL, ",\n"))
+	{
+		if (!--num)
+			return tok;
+	}
+	return NULL;
+}
+
 /* return an array of cluster centers of size [numClusters][numCoords] */
 int 
 seq_kmeans (		  
+	int bootstrap,
 	float **objects,  /* in: [numObjs][numCoords] */
 	int numCoords,	  /* no. features */
 	int numObjs,	  /* no. objects */
@@ -50,13 +91,10 @@ seq_kmeans (
 	int *newClusterSize; /* [numClusters]: no. objects assigned in each
 	                                new cluster */
 	float **newClusters; /* [numClusters][numCoords] */
-	unsigned long long int vertex_id = 0;
 	unsigned long long int **cluster_vertex_id;
 	
-	// Increment vertex_id to 1, 0 is reserved for starting node in DAG
-	fprintf(_vertices_file, "%3.2f ,= %3.2f ,- %3.2f\t%d\n", 0.0,
-					0.0, 0.0, 0);
-	vertex_id++;
+
+	//vertex_id++;
 
 	/* initialize membership[] */
 	for (i = 0; i < numObjs; i++) {
@@ -97,7 +135,7 @@ seq_kmeans (
 			cluster_vertex_id[i][j] = vertex_id++;
 			fprintf(_vertices_file, "%3.2f ,= %3.2f ,- %3.2f\t%llu\n", clusters[i][j],
 					clusters[i][j], 0.0, cluster_vertex_id[i][j]);
-			fprintf(_edges_file, "%d->%llu\n",0, cluster_vertex_id[i][j]);
+			fprintf(_edges_file, "%d->%llu\n", bootstrap, cluster_vertex_id[i][j]);
 		}
 	}
 
@@ -216,17 +254,42 @@ seq_kmeans (
 }
 
 int 
-main (void)
+main (int argc, char **argv)
 
 {
-	int numObjects = 8;
-	int numCoords = 3;
-	int numClusters = 3;
+	int bootstrap_size = 0;
+	int num_bootstrap = 0;
+	int numObjects = 0;
+	int numCoords = 0;
+	int numClusters = 0;
 	float threshold = 2;
-	int *membership = (int *)malloc(numObjects * sizeof(int));
+	FILE *desc_file = NULL, *data_file = NULL;
+	char buffer[1024];
+
+	if(argc != 3) {
+		printf("\nUsage:");
+		printf("\nkmeans <object description filename> <object data filename>\n");
+		exit(0);
+	}
+	desc_file = fopen(argv[1], "r");
+	data_file = fopen(argv[2], "r");
+	if(desc_file == NULL) {
+		printf("Can't open description file (desc.txt).\n");
+		exit(0);
+	}
+	if(data_file == NULL) {
+		printf("Can't open data file (data.csv).\n");
+		exit(0);
+	}
+	fscanf(desc_file, "%d %d %d %d %d", &numObjects, &numCoords, &numClusters, &bootstrap_size, &num_bootstrap);
+	fclose(desc_file);
+	printf("\n%d %d %d %d %d", numObjects, numCoords, numClusters, num_bootstrap, bootstrap_size);
+	
+	int *membership = (int *)calloc(bootstrap_size, sizeof(int));
 	assert(membership != NULL);
-	float **objects = (float **)malloc(numObjects * sizeof(float *));
+	float **objects = (float **)calloc(bootstrap_size, sizeof(float *));
 	assert(objects != NULL);
+	
 	int iterations = 500;
 	float **clusters;
 	FILE *trace_file = fopen("boot_strap3_trace.txt", "w+");
@@ -245,19 +308,46 @@ main (void)
 		exit(EXIT_FAILURE);
 	}
 
-	float data[] = {18, 23, 5, 22, 8, 9, 10, 3, 14, 16, 1, 6, 2, 14, 2, 23, 11,
-	 23, 22, 9, 25, 23, 2, 14};
-	for (int i = 0; i < numObjects; i++) {
-		objects[i] = (float *)calloc(numCoords, sizeof(float));
-		printf("Object # %i: ", i);
-		for (int j = 0; j < numCoords; j++) {
-			objects[i][j] = data[2 * i + j];
-			printf(" %6.3f, ", objects[i][j]);
+	float *data = (float *)calloc(numObjects*numCoords, sizeof(float));
+	int count = 0;
+	while(fgets(buffer, sizeof(buffer), data_file)) {
+		//printf("\n\n%s",buffer);
+        char *str = strtok(buffer, ",");		
+		while(str != NULL) {
+			data[count] = strtol (str, NULL,10);
+			//printf("%f ", data[count] );
+			str = strtok(NULL, ",");
+			count++;
 		}
-		printf("\n");
+        //printf("\n");
 	}
-	seq_kmeans(objects,	numCoords, numObjects, numClusters, threshold,
-	membership, clusters, trace_file, _vertices_file, _edges_file, iterations);
+	fclose(data_file);
+	// Allocate objects to run kmeans
+	for (int i = 0; i < bootstrap_size; i++) {
+		objects[i] = (float *)calloc(numCoords, sizeof(float));	
+	}
+	// Increment vertex_id to 1, 0 is reserved for starting node in DAG
+	fprintf(_vertices_file, "%3.2f ,= %3.2f ,- %3.2f\t%d\n", 0.0,
+					0.0, 0.0, 0);
+	for(int b=1; b<= num_bootstrap; b++){
+		fprintf(_vertices_file, "%3.2f ,= %3.2f ,- %3.2f\t%d\n", 0.0,
+			0.0, 0.0, b);
+		fprintf(_edges_file, "%d->%d\n",0, b);
+		// create bootstrap
+		for (int i = 0; i < bootstrap_size; i++) {
+			int d_obj = (int) (rand() / (double) (RAND_MAX) * (numObjects));	
+			// pick object from data at random		
+			printf("[%d] Object # %i: \n", d_obj, i);
+			for (int j = 0; j < numCoords; j++) {
+				objects[i][j] = data[2 * d_obj + j];
+				printf(" %6.3f, ", objects[i][j]);
+			}
+			printf("\n");
+		}
+
+		seq_kmeans(b, objects,	numCoords, bootstrap_size, numClusters, threshold,
+		membership, clusters, trace_file, _vertices_file, _edges_file, iterations);
+	}
 	fclose(trace_file);
 	fclose(_vertices_file);
 	fclose(_edges_file);

@@ -21,16 +21,18 @@
 
 import getopt, sys
 from ftippypkg import ftipDBLoader as ftipdb
+from ftippypkg.GraphBandwidthRecognition import BandwidthTesting as bw 
+
 
 # Remove 1st argument from the
 # list of command line arguments
 argumentList = sys.argv[1:]
  
 # Options
-options = "evhl:"
+options = "evhlm:"
  
 # Long options
-long_options = ["edge_file=", "help", "load", "vertex_file="]
+long_options = ["edgefile=", "help", "load", "vertexfile=", "minbandwidth"]
 
 edge_file = "edges.txt"
 vertex_file = "vertices.txt"
@@ -54,6 +56,10 @@ try:
             ftipdb.deleteGraph()
             # load new vertices and edges
             ftipdb.loadGraph(vertex_file, edge_file)
+
+        elif currentArgument in ("-m", "--minbandwidth"):
+            # find the minimum bandwidth of loaded graph
+            bw.findBandwidth()
 
         elif currentArgument in ("-v", "--vertex_file"):
             vertex_file = currentValue

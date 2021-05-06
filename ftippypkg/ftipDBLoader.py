@@ -17,6 +17,7 @@
 #
 #
 
+
 from neomodel import config, UniqueProperty, DoesNotExist, db
 from parse import compile
 from ftippypkg.Node import Node
