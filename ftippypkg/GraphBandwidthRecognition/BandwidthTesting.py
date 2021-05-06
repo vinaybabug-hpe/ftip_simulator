@@ -66,9 +66,9 @@ def findBandwidth():
         while True:
             if high >= low:
                 mid = (low + (high-1))/2
-                lrslt = Bandwidth(dfsorder[i:i+graphlayoutsize], low)
+                #lrslt = Bandwidth(dfsorder[i:i+graphlayoutsize], low)
                 mrslt = Bandwidth(dfsorder[i:i+graphlayoutsize], mid)
-                hrslt = Bandwidth(dfsorder[i:i+graphlayoutsize], high)
+                #hrslt = Bandwidth(dfsorder[i:i+graphlayoutsize], high)
                 #print("BW(%d)=%d BW(%d)=%d BW(%d)=%d" % (low, lrslt, mid, mrslt, high, hrslt))
                 if mrslt:
                     high = mid-1               
