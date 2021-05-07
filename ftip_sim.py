@@ -32,7 +32,7 @@ argumentList = sys.argv[1:]
 options = "evhlcdfm:"
  
 # Long options
-long_options = ["edgefile=", "help", "load", "vertexfile=", "minbandwidth"]
+long_options = ["edgefile=", "help", "load", "vertexfile=", "minbandwidth="]
 
 edge_file = "edges.txt"
 vertex_file = "vertices.txt"
@@ -54,6 +54,7 @@ try:
         elif currentArgument in ("-h", "--Help"):
             print("Usage:") 
             print(("\t%s --e <edge_file_path> --v <vertex_file_path> <operation>") % (sys.argv[0]))
+            print(("\t%s --m <#vertex (M) in partial layout(1<=M<=N), use all if M == N>") % (sys.argv[0]))
              
         elif currentArgument in ("-l", "--load"):
             # clear any previous graphs
@@ -63,7 +64,7 @@ try:
 
         elif currentArgument in ("-m", "--minbandwidth"):
             # find the minimum bandwidth of loaded graph
-            bw.findBandwidth()
+            bw.findBandwidth(currentValue)
 
         elif currentArgument in ("-c", "--convert"):
             convertor.convert_to_csv(vertex_file, edge_file,vertex_file_output,edge_file_output)

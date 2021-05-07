@@ -43,12 +43,13 @@ P = namedtuple('P', ['r', 'd'])
 # Wrapper method to find bandwitdh of graph G. 
 # This method does a binary search over 
 #
-def findBandwidth():
-    graphlayoutsize = None
-
+def findBandwidth(graphlayoutsize : int):   
     print("Find the minimum bandwidth of graph G.")
-    allvertex = Node.nodes.all()
-    graphlayoutsize = len(allvertex)
+    allvertex = Node.nodes.all()    
+    if graphlayoutsize == "all":
+        graphlayoutsize = len(allvertex)
+    else:
+        graphlayoutsize = int(graphlayoutsize)
     k = 0    
     #create connected components / layout of G and determine max 2k size
     (dfsorder, _2k) = createConnectedComponents("0", len(allvertex))
