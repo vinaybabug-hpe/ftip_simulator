@@ -21,43 +21,6 @@
 
 import getopt, sys
 from ftippypkg import ftipDBLoader as ftipdb
-from ftippypkg import ftipTraceConvertor as convertor
-
-def remove_duplicates(vertices_file)
-    df = pandas.read_csv(vertices_file,header=0)
-    df.groupby(['operand_1','operand_2','operator','result'], as_index=False)['id'].apply(list).reset_index(name='related_nodes')
-    print(len(p.loc[24, 'related_nodes']))
-    p2['count'] = p2.apply(lambda row: len(row['related_nodes']), axis=1)
-    p2['id'] = p2.apply(lambda row: row['related_nodes'][0], axis=1)
-    p3['related_nodes'] = p3.apply(lambda row: row['related_nodes'][1:], axis=1)
-    for index, row in p2.iterrows():
-        myDict.update(dict.fromkeys(row['related_nodes'], row['id']))
-
-
-
-#
-#  ftip_sim.py
-#  This file is part of FTiP Simulator.
-#
-#  FTiP Simulator is free software: you can redistribute it and/or modify
-#  it under the terms of the GNU General Public License as published by
-#  the Free Software Foundation, either version 3 of the License, or
-#  (at your option) any later version.
-#
-#  FTiP Simulator is distributed in the hope that it will be useful,
-#  but WITHOUT ANY WARRANTY; without even the implied warranty of
-#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#  GNU General Public License for more details.
-#
-#  You should have received a copy of the GNU General Public License
-#  along with FTiP Simulator.  If not, see <https://www.gnu.org/licenses/>.
-#
-#
-# Python program to handle FTiP command line arguments.
-
-
-import getopt, sys
-from ftippypkg import ftipDBLoader as ftipdb
 from ftippypkg.GraphBandwidthRecognition import BandwidthTesting as bw 
 from ftippypkg import ftipTraceConvertor as convertor
 
@@ -103,7 +66,7 @@ try:
             bw.findBandwidth()
 
         elif currentArgument in ("-c", "--convert"):
-            convertor.convert_to_csv(vertex_file, edge_file,vertex_file_output,edge_file_output)
+            convertor.convert_to_csv(vertex_file, edge_file,vertex_file_output,edge_file_output,2)
 
         elif currentArgument in ("-d", "--edge_output"):
             edge_file_output = currentValue
@@ -117,3 +80,6 @@ try:
 except getopt.error as err:
     # output error, and return with an error code
     print (str(err))
+
+
+    
