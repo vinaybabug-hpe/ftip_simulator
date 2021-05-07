@@ -27,7 +27,7 @@ import pandas
 config.DATABASE_URL = 'bolt://neo4j:test@localhost:7687'
 
 
-def convert_to_csv(vertex_file, edge_file, vertex_output, edges_output) :
+def convert_to_csv(vertex_file, edge_file, vertex_output, edges_output, k=-1) :
     print (("Loading vertices from file %s and edges from file %s") 
         % (vertex_file, edge_file))
     p1 = compile("{},={},-{}	{}")
@@ -58,27 +58,39 @@ def convert_to_csv(vertex_file, edge_file, vertex_output, edges_output) :
         except Exception as inst:
             print(type(inst))
             print("Problem with Vertex {} loading...".format(id))
+    # Reduces redundant nodes and then adds a column containing list of all the copies, and a column containing number of repetitions. 
     df = df.groupby(['operand_1','operand_2','operator','result'], as_index=False)['id'].apply(list).reset_index(name='related_nodes')
     df['count'] = df.apply(lambda row: len(row['related_nodes']), axis=1)
     df['id'] = df.apply(lambda row: row['related_nodes'][0], axis=1)
+
+    print("Creating dictionary of redundant ids")
     vertex_dictionary={}
-    for index, row in df.iterrows():
-        vertex_dictionary.update(vertex_dictionary.fromkeys(row['related_nodes'], row['id']))
-        related_nodes=[str(element) for element in row['related_nodes']]
-        related_nodes=":".join(related_nodes)
-        print(row['id'],row['id'],row['operand_1'],row['operand_2'],row['operator'],row['result'],row['count'],related_nodes, sep=",", file=vertex_output_file)   
-      
+    if k<0:
+        for index, row in df.iterrows():
+            vertex_dictionary.update(vertex_dictionary.fromkeys(row['related_nodes'], row['id']))
+            print(row['id'],row['id'],row['operand_1'],row['operand_2'],row['operator'],row['result'],row['count'], sep=",", file=vertex_output_file)
+    elif k>0:
+        for index, row in df.iterrows():
+            related_nodes_list=row['related_nodes']
+            node_chunks = [related_nodes_list[x:x+k] for x in range(0, len(related_nodes_list), k)]
+            for node_chunk in node_chunks:
+                chunk_id=node_chunk[0]
+                chunk_count=len(node_chunk)    
+                vertex_dictionary.update(vertex_dictionary.fromkeys(node_chunk, chunk_id))
+                print(chunk_id,chunk_id,row['operand_1'],row['operand_2'],row['operator'],row['result'],chunk_count, sep=",", file=vertex_output_file)
+
     vertex_output_file.close()
     edges = open(edge_file, 'r')
     edgeLs = edges.readlines()
     edges_output_file=open(edges_output,'w')
     # print("vertex1,vertex2",file=edges_output_file)
+    print("Converting id of redundant nodes to the id of the first node")
     for edgeL in edgeLs:
         temp = edges_parser.parse(edgeL)
         from_node_id = vertex_dictionary[int(temp[0])]
         to_node_id = vertex_dictionary[int(temp[1])]
         # print(int(temp[0]),",",int(temp[1]),",CONNECTED", sep="", file=edges_output_file)    
-        print(from_node_id,",",from_node_id,",CONNECTED", sep="", file=edges_output_file)    
+        print(from_node_id,",",to_node_id,",CONNECTED", sep="", file=edges_output_file)    
     edges_output_file.close()
 
 def deleteGraph():
