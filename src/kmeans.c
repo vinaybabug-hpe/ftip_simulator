@@ -326,13 +326,15 @@ main (int argc, char **argv)
 	for (int i = 0; i < bootstrap_size; i++) {
 		objects[i] = (float *)calloc(numCoords, sizeof(float));	
 	}
+	int firstVertex = vertex_id++;
 	// Increment vertex_id to 1, 0 is reserved for starting node in DAG
 	fprintf(_vertices_file, "%3.2f ,= %3.2f ,- %3.2f\t%d\n", 0.0,
-					0.0, 0.0, 0);
+					0.0, 0.0, firstVertex);	
 	for(int b=1; b<= num_bootstrap; b++){
+		int bootstrapVertex = vertex_id++;
 		fprintf(_vertices_file, "%3.2f ,= %3.2f ,- %3.2f\t%d\n", 0.0,
-			0.0, 0.0, b);
-		fprintf(_edges_file, "%d->%d\n",0, b);
+			0.0, 0.0, bootstrapVertex);
+		fprintf(_edges_file, "%d->%d\n",firstVertex, bootstrapVertex);
 		// create bootstrap
 		for (int i = 0; i < bootstrap_size; i++) {
 			int d_obj = (int) (rand() / (double) (RAND_MAX) * (numObjects));	
@@ -345,7 +347,7 @@ main (int argc, char **argv)
 			printf("\n");
 		}
 
-		seq_kmeans(b, objects,	numCoords, bootstrap_size, numClusters, threshold,
+		seq_kmeans(bootstrapVertex, objects,	numCoords, bootstrap_size, numClusters, threshold,
 		membership, clusters, trace_file, _vertices_file, _edges_file, iterations);
 	}
 	fclose(trace_file);
