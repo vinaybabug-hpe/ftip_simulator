@@ -22,6 +22,7 @@
 import getopt, sys
 from ftippypkg import ftipDBLoader as ftipdb
 from ftippypkg.GraphBandwidthRecognition import BandwidthTesting as bw 
+from ftippypkg import Graph_Relabeler as relabel
 from ftippypkg import ftipTraceConvertor as convertor
 
 # Remove 1st argument from the
@@ -29,13 +30,13 @@ from ftippypkg import ftipTraceConvertor as convertor
 argumentList = sys.argv[1:]
  
 # Options
-options = "evhlcdfm:"
+options = "evhlcdfmra:"
  
 # Long options
-long_options = ["edgefile=", "help", "load", "vertexfile=", "minbandwidth="]
+long_options = ["edgefile=", "help", "load=", "vertexfile=", "minbandwidth=", "convert=","add_redundancy="]
 
-edge_file = "edges.txt"
-vertex_file = "vertices.txt"
+edge_file = "edges_16.txt"
+vertex_file = "vertices_16.txt"
 
 edge_file_output = "edges_output.csv"
 vertex_file_output = "vertices_output.csv"
@@ -54,20 +55,24 @@ try:
         elif currentArgument in ("-h", "--Help"):
             print("Usage:") 
             print(("\t%s --e <edge_file_path> --v <vertex_file_path> <operation>") % (sys.argv[0]))
-            print(("\t%s --m <#vertex (M) in partial layout(1<=M<=N), use all if M == N>") % (sys.argv[0]))
-             
+            print(("\t%s --m <#vertex (M) in partial layout(1<=M<=N), use all if M == N>") % (sys.argv[0]))             
         elif currentArgument in ("-l", "--load"):
             # clear any previous graphs
             ftipdb.deleteGraph()
             # load new vertices and edges
-            ftipdb.loadGraph(vertex_file, edge_file)
-
+            ftipdb.loadGraph(vertex_file, edge_file, redundancy=currentValue)
+            bw.findBandwidth("all")
+        elif currentArgument in ("-a", "--add_redundancy"):
+            ftipdb.increaseGraphSize(percent_increase=currentValue)
+            bw.findBandwidth("all")
         elif currentArgument in ("-m", "--minbandwidth"):
             # find the minimum bandwidth of loaded graph
             bw.findBandwidth(currentValue)
-
+        elif currentArgument in ("-r"):
+            relabel.dfs_graph_relabel()
         elif currentArgument in ("-c", "--convert"):
-            convertor.convert_to_csv(vertex_file, edge_file,vertex_file_output,edge_file_output)
+            
+            convertor.convert_to_csv(vertex_file, edge_file,vertex_file_output,edge_file_output,k=currentValue)
 
         elif currentArgument in ("-d", "--edge_output"):
             edge_file_output = currentValue
@@ -81,3 +86,6 @@ try:
 except getopt.error as err:
     # output error, and return with an error code
     print (str(err))
+
+
+    
