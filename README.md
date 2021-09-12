@@ -12,15 +12,13 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with FTiP Simulator.  If not, see <https://www.gnu.org/licenses/>.
- 
-Simulator code for the FTiP paper.
 
-Simulator uses Neo4j to store data. For neo4j please create following 
-directories
+FTiPSim is a tool that is used to track repeated patterns in computational steps of various clustering algorithms used in ensemble methods. FTiPSim is used to analyze patterns across local, global, single statement, code blocks, and functions over multiple invocations. The simulator starts by producing the pair (M,G), where M is an aggregation of computational units and G is the associated interaction graph. The simulator keeps track of the number of computational units, number of dependencies between those units, and computes the minimum bandwidth of G. Simulator stores data using graph database management system Neo4j, which requires creation of the following directories:
+
 * $HOME/neo4j/data
 * $HOME/neo4j/logs
 * $HOME/neo4j/import
-* $HOME/neo4j/plugins 
+* $HOME/neo4j/plugins
 
 For running neo4j in docker under linux
 
