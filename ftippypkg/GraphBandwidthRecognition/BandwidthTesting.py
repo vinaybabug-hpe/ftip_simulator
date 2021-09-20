@@ -1,14 +1,14 @@
 #
 #  BandwidthTesting.py
 #  This file is part of FTiP Simulator and implements algorithms from two
-#  Articles,  
+#  Articles,
 #  Saxe, J. B. Dynamic-programming algorithms for recognizing small-bandwidth
-#  graphs in polynomial time SIAM Journal on Algebraic Discrete Methods, 
-#  SIAM, 1980, 1, 363-369 
+#  graphs in polynomial time SIAM Journal on Algebraic Discrete Methods,
+#  SIAM, 1980, 1, 363-369
 #  Article (gurari1984improved)
-#  Gurari, E. M. & Sudborough, I. H. Improved dynamic programming algorithms 
-#  for bandwidth minimization and the mincut linear arrangement problem 
-#  Journal of Algorithms, Elsevier, 1984, 5, 531-546 
+#  Gurari, E. M. & Sudborough, I. H. Improved dynamic programming algorithms
+#  for bandwidth minimization and the mincut linear arrangement problem
+#  Journal of Algorithms, Elsevier, 1984, 5, 531-546
 #
 #  FTiP Simulator is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -40,68 +40,40 @@ ActiveRegion = namedtuple("ActiveRegion", ["vertex", "examined", "unplaced"])
 P = namedtuple('P', ['r', 'd'])
 
 #
-# Wrapper method to find bandwitdh of graph G. 
-# This method does a binary search over 
+# Wrapper method to find bandwitdh of graph G.
+# This method does a binary search over
 #
-def findBandwidth(graphlayoutsize : int):   
+def findBandwidth(graphlayoutsize : int):
     print("Find the minimum bandwidth of graph G.")
-    allvertex = Node.nodes.all()    
+    allvertex = Node.nodes.all()
     if graphlayoutsize == "all":
         graphlayoutsize = len(allvertex)
     else:
         graphlayoutsize = int(graphlayoutsize)
-    k = 0    
+    k = 0
     #create connected components / layout of G and determine max 2k size
     (dfsorder, _2k) = createConnectedComponents("0", len(allvertex))
     k = math.ceil(_2k/2)
     print("K for G is %d" % (k))
     minBandwidth = float("inf")
-    # Call Bandwidth(G, k); G is subset vertices in dfsorder. 
+    # Call Bandwidth(G, k); G is subset vertices in dfsorder.
     # For small graph you can pass full graph vertices
     # Bandwidth(G) = min{bandwidth(f) | f is a layout of G
     for i in range(0, len(dfsorder), graphlayoutsize):
-        #print("\n")
-        #print(dfsorder[i:i+graphlayoutsize], end=' ')
         low, mid, high = k, (k + len(allvertex))/2, len(allvertex)
         lrslt, mrslt, hrslt = False, False, False
         while True:
             if high >= low:
                 mid = (low + (high-1))/2
-                #lrslt = Bandwidth(dfsorder[i:i+graphlayoutsize], low)
                 mrslt = Bandwidth(dfsorder[i:i+graphlayoutsize], mid)
-                #hrslt = Bandwidth(dfsorder[i:i+graphlayoutsize], high)
-                #print("BW(%d)=%d BW(%d)=%d BW(%d)=%d" % (low, lrslt, mid, mrslt, high, hrslt))
                 if mrslt:
-                    high = mid-1               
+                    high = mid-1
                 else:
                     low = mid+1
             else:
-                break   
-        minBandwidth = min(minBandwidth, mid)         
+                break
+        minBandwidth = min(minBandwidth, mid)
     print("Minimum bandwidth of graph G is %d" % (minBandwidth))
-
-    # 1. Fifo queue for active regions
-    # Q = deque() 
-    #  # 2nd data structure - Array to keep track of possible active regions        
-    # A = defaultdict()
-    # successors = defaultdict()
-    # phiunplaced = set()  
-    # lk = 5
-    # arid = 1
-    # A[0] = "phi"
-    # print('\n==================================================================')    
-    # for i in range(0, len(dfsorder), lk):        
-    #     print("\n")
-    #     print(dfsorder[i:i+k], end=' ')
-    #     ar = ActiveRegion(vertex=set(dfsorder[i:i+k]), examined = False, unplaced = None) 
-    #     phiunplaced.union(ar.vertex)
-    #     #A[arid] = ar
-    #     #for v in A[arid-1].vertex:
-    #     #    successors[v] = arid  
-    # arrv["phi"] = ActiveRegion(vertex=set(), examined = True, unplaced = phiunplaced) 
-    # # Initialize q_active_regions
-    # Q.append(arrv["phi"])
-    # print(isMinBandwidthK(dfsorder, 5))
 
     return True
 
@@ -117,7 +89,7 @@ def findBandwidth(graphlayoutsize : int):
 #    a. Set A[s].examined to TRUE.
 #    b. Computer A[s].unplaced by deleting the last vertex of s from
 #       A[r].unplaced.
-#    c. If A[r].unplaced is the empty set, then halt asserting that 
+#    c. If A[r].unplaced is the empty set, then halt asserting that
 #       Bandwidth(G) <= k.
 #    d. Insert s at the end of Q.
 #
@@ -126,7 +98,7 @@ def findBandwidth(graphlayoutsize : int):
 #
 def isMinBandwidthK(Q : deque, A : defaultdict):
 
-    print("Checking for minimum bandwidth of graph <= k")   
+    print("Checking for minimum bandwidth of graph <= k")
     while Q:
         curractiveregion = Q.popleft()
         unplaced = curractiveregion.unplaced
@@ -138,15 +110,15 @@ def isMinBandwidthK(Q : deque, A : defaultdict):
                 sarrv = defaultdict()
                 for ssvertex in s.directed_edges:
                     if ssvertex.name in unplaced:
-                        sarrv[ssvertex.name] =  unplaced.pop(ssvertex.name) 
+                        sarrv[ssvertex.name] =  unplaced.pop(ssvertex.name)
                 sar.unplaced = sarrv
                 if not unplaced:
                     return True
             activeregionsQ.append(sar)
-    return False 
+    return False
 
 #
-# Method returns set of edges incident on v in vertices. 
+# Method returns set of edges incident on v in vertices.
 # It also includes dangling edges.
 #
 def getEdges(vertices : set):
@@ -160,27 +132,25 @@ def getEdges(vertices : set):
 def createConnectedComponents(snode: str, graphlen : int):
     startNode = Node.nodes.get(name=snode)
     visited = set()
-    #edges = set()
     lk = 0
     dfsorder = []
     def dfsutil(cn):
         nonlocal lk
         #nonlocal edges
-        # mark node visited        
+        # mark node visited
         dfsorder.append(cn.name)
-        visited.add(cn.name)                
+        visited.add(cn.name)
         lk = max(lk, len(cn.directed_edges))
         # visit all other of current node
         for neighbor in cn.directed_edges:
-            #edges.add((cn.name, neighbor.name))
-            if neighbor.name not in visited:               
+            if neighbor.name not in visited:
                 dfsutil(neighbor)
         return
     dfsutil(startNode)
     return (dfsorder, lk)
 
 #
-# Check if partial layout is K bandwidth plausible. 
+# Check if partial layout is K bandwidth plausible.
 #
 def bandwidthKplausible(p, k):
     (r, d) = p
@@ -201,7 +171,7 @@ def bandwidthKplausible(p, k):
     return True
 
 #
-# This method implements the Algorithm in Fig. 2.1 from 
+# This method implements the Algorithm in Fig. 2.1 from
 # Gurari, E. M. & Sudborough, I.H.
 # The procedure Unassigned.
 #
@@ -216,7 +186,7 @@ def Unassigned(R, D):
         return {"0"}
     for e in D:
         DG[e] = True
-        Q.append(e)    
+        Q.append(e)
     for v in R:
         A[v] = True
     while Q:
@@ -237,7 +207,7 @@ def Unassigned(R, D):
     return V
 
 #
-# This method implements the Algorithm in Fig. 2.2 from 
+# This method implements the Algorithm in Fig. 2.2 from
 # Gurari, E. M. & Sudborough, I.H.
 # The procedure Update.
 #
@@ -250,7 +220,6 @@ def Update(p, s):
     for e in D:
         # del e if incident on s
         Dtemp.remove(e)
-        #print ('del e if incident on s')
     D = Dtemp
     k = 0
     if len(R) == 0 or len(R) < k:
@@ -277,21 +246,17 @@ def Update(p, s):
     return P(r=set(R_temp), d=D)
 
 #
-# This method implements the Algorithm in Fig. 2.3 from 
+# This method implements the Algorithm in Fig. 2.3 from
 # Gurari, E. M. & Sudborough, I.H.
 # An algorithm for determining if a graph G has bandwidth k
 #
-def Bandwidth(G, k):    
+def Bandwidth(G, k):
     edges = getEdges(G)
-    #edgeCnt = len(edges)
-    #vertexCnt = len(G)
 
-    # 1. Fifo queue for k-plausible pairs
     Q = deque()
-    # 2. an array T which contains one element for each 
+    # 2. an array T which contains one element for each
     # bandwidth-kplausible pair p = (r, d).
     T = defaultdict(bool)
-    # add p = (empty, empty)
     p = P(r= set(), d = set())
     Q.append(p)
     while Q:
@@ -304,8 +269,8 @@ def Bandwidth(G, k):
             if not d_dash:
                 return True
             p_dash_hash = P(r=frozenset(r_dash), d=frozenset(d_dash))
-            if (bandwidthKplausible(p_dash, k) 
-                and T[p_dash_hash] == False):            
+            if (bandwidthKplausible(p_dash, k)
+                and T[p_dash_hash] == False):
                 T[p_dash_hash] = True
                 Q.append(p_dash)
         else:
@@ -316,10 +281,9 @@ def Bandwidth(G, k):
                 if not d_dash:
                      return True
                 p_dash_hash = P(r=frozenset(r_dash), d=frozenset(d_dash))
-                if (bandwidthKplausible(p_dash, k) and 
+                if (bandwidthKplausible(p_dash, k) and
                     T[p_dash_hash] == False):
                     T[p_dash_hash] = True
                     Q.append(p_dash)
     #print("Done!")
     return False
-
