@@ -26,11 +26,14 @@ cp build/vertices_output.csv neo4j/import/
 cp build/edges_output.csv neo4j/import/
 
 
-sudo docker ps -aq --filter "name=ftipneo4j0" | grep -q . && sudo docker stop ftipneo4j0 && sudo docker rm -fv ftipneo4j0
-sudo docker ps -aq --filter "name=ftipneo4j" | grep -q . && sudo docker stop ftipneo4j && sudo docker rm -fv ftipneo4j
+podman ps -aq --filter "name=ftipneo4j0" | grep -q . && podman stop ftipneo4j0 && podman rm -fv ftipneo4j0
+podman ps -aq --filter "name=ftipneo4j" | grep -q . && podman stop ftipneo4j && podman rm -fv ftipneo4j
 
+podman pod rm -a -f
+podman image prune -a -f
+podman rmi -a -f
 
-sudo docker run \
+podman run \
 --name ftipneo4j0 \
 -p7474:7474 -p7687:7687 \
 -d \
@@ -49,7 +52,7 @@ sleep 3
 
 echo "Importing data"
 
-sudo docker exec --interactive --tty ftipneo4j0 neo4j-admin import --database=neo4j2 --nodes=Node=/import/vertex_headers.csv,/import/vertices_output.csv --relationships=CONNECTED=/import/edges_headers.csv,/import/edges_output.csv
+podman exec --interactive --tty ftipneo4j0 neo4j-admin import --database=neo4j2 --nodes=Node=/import/vertex_headers.csv,/import/vertices_output.csv --relationships=CONNECTED=/import/edges_headers.csv,/import/edges_output.csv
 
 sleep 15
 cd build
