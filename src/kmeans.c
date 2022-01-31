@@ -27,8 +27,8 @@
 #include <assert.h>
 #include <ctype.h>
 
-#define VERTICES_FILE "vertices.txt" 
-#define EDGES_FILE "edges.txt" 
+#define VERTICES_FILE "vertices.csv" 
+#define EDGES_FILE "edges.csv" 
 
 static unsigned long long int vertex_id = 0;
 
@@ -81,6 +81,7 @@ seq_kmeans (
 	float **clusters, /* out: [numClusters][numCoords] */
 	FILE *trace_file,
 	FILE *_vertices_file,
+	
 	FILE *_edges_file,
 	int iterations)
 
@@ -115,6 +116,9 @@ seq_kmeans (
 		malloc(numClusters * sizeof(unsigned long long int *));
 	assert(cluster_vertex_id != NULL);
 	cluster_vertex_id[0] = (unsigned long long int *)
+	
+	
+	
 		calloc(numClusters * numCoords, sizeof(unsigned long long int));
 	assert(cluster_vertex_id[0] != NULL);
 	for (i = 1; i < numClusters; i++) {
@@ -130,12 +134,13 @@ seq_kmeans (
 		}
 	}
 
-	for (i = 0; i < numClusters; i++) {
+
+	for (i = 0; i < numClusters; i++) { 
 		for (j = 0; j < numCoords; j++) {
 			cluster_vertex_id[i][j] = vertex_id++;
-			fprintf(_vertices_file, "%3.2f ,= %3.2f ,- %3.2f\t%llu\n", clusters[i][j],
-					clusters[i][j], 0.0, cluster_vertex_id[i][j]);
-			fprintf(_edges_file, "%d->%llu\n", bootstrap, cluster_vertex_id[i][j]);
+			fprintf(_vertices_file, "%d,%3.2f,%3.2f,-,%3.2f,%llu\n", cluster_vertex_id[i][j],clusters[i][j],
+					clusters[i][j], 0.0);
+			fprintf(_edges_file, "%d,%llu,IS_CONNECTED\n", bootstrap, cluster_vertex_id[i][j]);
 		}
 	}
 
@@ -165,27 +170,26 @@ seq_kmeans (
 					
 					fprintf(trace_file, "%3.2f = %3.2f - %3.2f\n", term, 
 					objects[oIndex][feature], clusters[cluster_index][feature]);
-					fprintf(_vertices_file, "%3.2f ,= %3.2f ,- %3.2f\t%llu\n", term, 
-					objects[oIndex][feature], clusters[cluster_index][feature], 
-						vertex_1 = vertex_id++);
+					fprintf(_vertices_file, "%d,%3.2f,%3.2f,-,%3.2f,%llu\n",vertex_1 = vertex_id++, term, 
+					objects[oIndex][feature], clusters[cluster_index][feature]);
 					float squared_term = term * term;
 					fprintf(trace_file, "%3.2f = %3.2f * %3.2f\n", squared_term
 					, term, term);
-					fprintf(_vertices_file, "%3.2f ,= %3.2f ,* %3.2f\t%llu\n", squared_term
-					, term, term, vertex_2 = vertex_id++);
+					fprintf(_vertices_file, "%d,%3.2f,%3.2f,*,%3.2f,%llu\n",vertex_2 = vertex_id++, squared_term
+					, term, term);
 					//Create edges
-					fprintf(_edges_file, "%llu->%llu\n",
+					fprintf(_edges_file, "%llu,%llu,IS_CONNECTED\n",
 						cluster_vertex_id[cluster_index][feature], vertex_1);
-					fprintf(_edges_file, "%llu->%llu\n",vertex_1, vertex_2);
+					fprintf(_edges_file, "%llu,%llu,IS_CONNECTED\n",vertex_1, vertex_2);
 					float old_result = result;
 					result = old_result + squared_term;
 					fprintf(trace_file, "%3.2f = %3.2f + %3.2f\n", result, 
 					old_result, squared_term);
-					fprintf(_vertices_file, "%3.2f ,= %3.2f ,+ %3.2f\t%llu\n", result, 
-					old_result, squared_term, vertex_3 = vertex_id++);
-					fprintf(_edges_file, "%llu->%llu\n",vertex_2, vertex_3);
+					fprintf(_vertices_file, "%d,%3.2f,%3.2f,+,%3.2f,%llu\n",vertex_3 = vertex_id++, result, 
+					old_result, squared_term);
+					fprintf(_edges_file, "%llu,%llu,IS_CONNECTED\n",vertex_2, vertex_3);
 					if (vertex_4 != 0) {
-						fprintf(_edges_file, "%llu->%llu\n",vertex_4, vertex_3);
+						fprintf(_edges_file, "%llu,%llu,IS_CONNECTED\n",vertex_4, vertex_3);
 					}
 					// store previous vertex_3 id
 					vertex_4 = vertex_3;
@@ -221,9 +225,9 @@ seq_kmeans (
 				}
 				newClusters[cluster_ind][feature] = 0.0; /* set back to 0 */
 				cluster_vertex_id[cluster_ind][feature] = vertex_id++;
-				fprintf(_vertices_file, "%3.2f ,= %3.2f ,- %3.2f\t%llu\n", 
-				clusters[cluster_ind][feature], clusters[cluster_ind][feature],
-				 0.0, cluster_vertex_id[cluster_ind][feature]);
+				fprintf(_vertices_file, "%d,%3.2f,%3.2f,-,%3.2f,%llu\n", 
+				cluster_vertex_id[cluster_ind][feature],clusters[cluster_ind][feature], clusters[cluster_ind][feature],
+				 0.0);
 			}			
 			clusterSize[cluster_ind] = newClusterSize[cluster_ind];
 			newClusterSize[cluster_ind] = 0;
@@ -302,11 +306,15 @@ main (int argc, char **argv)
 		printf("\nCould not create/open vertices file.");
 		exit(EXIT_FAILURE);
 	}
+	//fprintf(_vertices_file, "%s , %s , %s, %s, %s\n", "result",
+	//			"variable1","operator", "variable2", "vertex_id");
+	
 	FILE *_edges_file = fopen(EDGES_FILE, "w+");
 	if (_edges_file == NULL) {
 		printf("\nCould not create/open edges file.");
 		exit(EXIT_FAILURE);
 	}
+	//fprintf(_edges_file, "%s,%s,IS_CONNECTED\n", "vertex_id", "vertex_id");
 
 	float *data = (float *)calloc(numObjects*numCoords, sizeof(float));
 	int count = 0;
@@ -328,13 +336,13 @@ main (int argc, char **argv)
 	}
 	int firstVertex = vertex_id++;
 	// Increment vertex_id to 1, 0 is reserved for starting node in DAG
-	fprintf(_vertices_file, "%3.2f ,= %3.2f ,- %3.2f\t%d\n", 0.0,
-					0.0, 0.0, firstVertex);	
+	fprintf(_vertices_file, "%d,%3.2f,%3.2f,-,%3.2f\n",firstVertex,0.0,
+					0.0, 0.0);	
 	for(int b=1; b<= num_bootstrap; b++){
 		int bootstrapVertex = vertex_id++;
-		fprintf(_vertices_file, "%3.2f ,= %3.2f ,- %3.2f\t%d\n", 0.0,
-			0.0, 0.0, bootstrapVertex);
-		fprintf(_edges_file, "%d->%d\n",firstVertex, bootstrapVertex);
+		fprintf(_vertices_file, "%d,%3.2f,%3.2f,-, %3.2f\n",bootstrapVertex, 0.0,
+			0.0, 0.0);
+		fprintf(_edges_file, "%d,%d,IS_CONNECTED\n",firstVertex, bootstrapVertex);
 		// create bootstrap
 		for (int i = 0; i < bootstrap_size; i++) {
 			int d_obj = (int) (rand() / (double) (RAND_MAX) * (numObjects));	

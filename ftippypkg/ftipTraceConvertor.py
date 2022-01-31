@@ -21,6 +21,7 @@ from neomodel import config, UniqueProperty, DoesNotExist, db
 from parse import compile
 from ftippypkg.Node import Node
 import pandas
+import os
 
 
 # Configure neo4j connection string
@@ -28,6 +29,7 @@ config.DATABASE_URL = 'bolt://neo4j:test@localhost:7687'
 
 
 def convert_to_csv(vertex_file, edge_file, vertex_output, edges_output) :
+    print(("Current Working Directory: %s")% (os.getcwd()))
     print (("Loading vertices from file %s and edges from file %s") 
         % (vertex_file, edge_file))
     p1 = compile("{},={},-{}	{}")
