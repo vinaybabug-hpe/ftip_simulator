@@ -56,6 +56,16 @@ docker run \
 
     Please following link (https://neo4j.com/developer/python/) for more details.
 
+If you are using neo4j desktop version on a laptop. Create a database using desktop UI. Once created open a terminal from the desktop UI of the database.
+Inside the bash terminal of desktop UI; do
+
+export PATH=$PATH:$PWD/bin/
+
+And set path for CMAKE in run_neo4j.sh
+CMAKE_PATH=
+
+Then navigate to project folder and run script run_neo4j.sh
+
 Simulator exposes gen_graph.sh script to build custom kmeans algorithm and run it. This script uses desc.txt and data.csv to specify run parameters. These parameters are used while generating cu graph for ensemble.
 To run the script type ./gen_graph.sh at the terminal.
 
